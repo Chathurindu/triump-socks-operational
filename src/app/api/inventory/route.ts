@@ -2,15 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireRole } from '@/lib/auth-utils';
 
+/* ── sort whitelist ── */
+const SORT_MAP: Record<string, string> = {
+  sku: 'i.sku',
+  name: 'i.name',
+  category_name: 'ic.name',
+  unit: 'i.unit',
+  current_stock: 'i.current_stock',
+  reorder_level: 'i.reorder_level',
+  unit_cost: 'i.unit_cost',
+  location: 'i.location',
+  supplier_name: 's.name',
+  created_at: 'i.created_at',
+};
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const search  = searchParams.get('search') ?? '';
-  const catType = searchParams.get('catType') ?? '';   // raw_material | finished_good | …
-  const page    = parseInt(searchParams.get('page')  ?? '1');
-  const limit   = parseInt(searchParams.get('limit') ?? '15');
-  const offset  = (page - 1) * limit;
 
-  // Metadata endpoint: returns categories + suppliers for forms
+  /* ── meta endpoint: categories + suppliers for forms ── */
   if (searchParams.get('meta') === '1') {
     const [cats, sups] = await Promise.all([
       db.query(`SELECT id, name, type FROM item_categories ORDER BY type, name`),
@@ -19,33 +28,59 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ categories: cats.rows, suppliers: sups.rows });
   }
 
+  const search  = searchParams.get('search') ?? '';
+  const catType = searchParams.get('catType') ?? '';
+  const page    = parseInt(searchParams.get('page')  ?? '1');
+  const limit   = parseInt(searchParams.get('limit') ?? '15');
+  const offset  = (page - 1) * limit;
+  const sortKey = searchParams.get('sortKey') ?? 'created_at';
+  const sortDir = searchParams.get('sortDir') === 'asc' ? 'ASC' : 'DESC';
+
+  const orderCol = SORT_MAP[sortKey] ?? 'i.created_at';
+
   try {
     const catFilter = catType ? `AND ic.type = '${catType.replace(/'/g, "''")}'` : '';
-    const query = `
-      SELECT i.*, ic.name AS category_name, ic.type AS category_type,
-             s.name AS supplier_name,
-             CASE WHEN i.current_stock <= i.reorder_level THEN TRUE ELSE FALSE END AS low_stock
+    const whereBase = `
       FROM inventory_items i
       LEFT JOIN item_categories ic ON ic.id = i.category_id
       LEFT JOIN suppliers s ON s.id = i.supplier_id
       WHERE i.is_active = TRUE
         AND (i.name ILIKE $1 OR i.sku ILIKE $1)
         ${catFilter}
-      ORDER BY ic.type, i.name
+    `;
+
+    const dataQ = `
+      SELECT i.*, ic.name AS category_name, ic.type AS category_type,
+             s.name AS supplier_name,
+             CASE WHEN i.current_stock <= i.reorder_level THEN TRUE ELSE FALSE END AS low_stock
+      ${whereBase}
+      ORDER BY ${orderCol} ${sortDir}
       LIMIT $2 OFFSET $3
     `;
-    const countQ = `
-      SELECT COUNT(*) FROM inventory_items i
+    const countQ = `SELECT COUNT(*) ${whereBase}`;
+    const summaryQ = `
+      SELECT
+        COUNT(*)::int AS total_items,
+        COUNT(*) FILTER (WHERE i.current_stock <= i.reorder_level)::int AS low_stock,
+        COUNT(*) FILTER (WHERE i.current_stock > i.reorder_level)::int AS in_stock,
+        COALESCE(SUM(i.current_stock * i.unit_cost), 0)::numeric AS total_value,
+        COALESCE(COUNT(DISTINCT ic.type), 0)::int AS category_types
+      FROM inventory_items i
       LEFT JOIN item_categories ic ON ic.id = i.category_id
-      WHERE i.is_active=TRUE
-        AND (i.name ILIKE $1 OR i.sku ILIKE $1)
-        ${catFilter}
+      WHERE i.is_active = TRUE
     `;
-    const [res, countRes] = await Promise.all([
-      db.query(query, [`%${search}%`, limit, offset]),
+
+    const [res, countRes, summaryRes] = await Promise.all([
+      db.query(dataQ, [`%${search}%`, limit, offset]),
       db.query(countQ, [`%${search}%`]),
+      db.query(summaryQ),
     ]);
-    return NextResponse.json({ data: res.rows, total: parseInt(countRes.rows[0].count) });
+
+    return NextResponse.json({
+      data: res.rows,
+      total: parseInt(countRes.rows[0].count),
+      summary: summaryRes.rows[0] ?? null,
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: 'Failed to fetch inventory' }, { status: 500 });

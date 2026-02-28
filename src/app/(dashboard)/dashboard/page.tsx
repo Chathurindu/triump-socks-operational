@@ -41,7 +41,7 @@ export default function DashboardPage() {
     </div>
   );
 
-  if (!data) return <div className="text-sm text-gray-500">Failed to load dashboard.</div>;
+  if (!data) return <div className="text-sm text-gray-500 dark:text-gray-400">Failed to load dashboard.</div>;
 
   return (
     <div className="space-y-5">
@@ -79,7 +79,7 @@ export default function DashboardPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v: number) => formatCurrency(v)} />
+              <Tooltip formatter={(v) => formatCurrency(Number(v))} />
               <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
               <Area type="monotone" dataKey="revenue" stroke="#d4730a" fill="url(#revGrad)" strokeWidth={2} name="Revenue" />
               <Area type="monotone" dataKey="expense" stroke="#ef4444" fill="url(#expGrad)" strokeWidth={2} name="Expense" />
@@ -91,12 +91,12 @@ export default function DashboardPage() {
         <Card title="Revenue by Product">
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie data={data.topProducts} dataKey="revenue" nameKey="name" cx="50%" cy="50%" outerRadius={75} label={({ name, percent }) => `${name.split(' ')[0]} ${(percent * 100).toFixed(0)}%`} labelLine={false} style={{ fontSize: 9 }}>
+              <Pie data={data.topProducts} dataKey="revenue" nameKey="name" cx="50%" cy="50%" outerRadius={75} label={({ name, percent }: any) => `${(name ?? '').split(' ')[0]} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false} style={{ fontSize: 9 }}>
                 {data.topProducts.map((_, i) => (
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v: number) => formatCurrency(v)} />
+              <Tooltip formatter={(v) => formatCurrency(Number(v))} />
             </PieChart>
           </ResponsiveContainer>
         </Card>

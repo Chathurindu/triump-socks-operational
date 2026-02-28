@@ -1,5 +1,8 @@
 ﻿@import "tailwindcss";
 
+/* Tell Tailwind dark: utilities to use the .dark class (set by next-themes) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --sidebar-width: 220px;
   --header-height: 56px;
@@ -34,6 +37,29 @@ body {
 .dark body, body.dark {
   background-color: var(--dark-bg);
   color: var(--dark-text);
+}
+
+/* â"€â"€â"€ Recharts dark mode â"€â"€â"€â"€â"€â"€ */
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line {
+  stroke: var(--dark-border);
+}
+.dark .recharts-text,
+.dark .recharts-cartesian-axis-tick-value {
+  fill: var(--dark-text-2) !important;
+}
+.dark .recharts-legend-item-text {
+  color: var(--dark-text-2) !important;
+}
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: var(--dark-card) !important;
+  border-color: var(--dark-border-2) !important;
+}
+.dark .recharts-default-tooltip .recharts-tooltip-label {
+  color: var(--dark-text) !important;
+}
+.dark .recharts-default-tooltip .recharts-tooltip-item {
+  color: var(--dark-text-2) !important;
 }
 
 a { text-decoration: none; }
@@ -140,6 +166,10 @@ a:not([class]) { color: inherit; }
   box-shadow: 0 0 0 3px rgba(245,158,11,0.2);
 }
 .dark .triumph-input::placeholder { color: var(--dark-text-3); }
+.dark .triumph-input option {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
 .triumph-label {
   display: block;
   font-size: 0.72rem;
@@ -295,26 +325,19 @@ a:not([class]) { color: inherit; }
   backdrop-filter: blur(4px);
   animation: triumph-fade-in 0.2s ease both;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
-}
-@media (min-width: 640px) {
-  .modal-overlay { align-items: center; }
+  padding: 2rem 1rem;
+  overflow-y: auto;
 }
 .modal-panel {
   width: 100%;
   max-width: 36rem;
   background: #ffffff;
-  border-radius: 1.25rem 1.25rem 0 0;
-  animation: triumph-slide-up 0.32s cubic-bezier(0.16,1,0.3,1) both;
-  max-height: 90svh;
-  overflow-y: auto;
-}
-@media (min-width: 640px) {
-  .modal-panel {
-    border-radius: 1.25rem;
-    animation: triumph-scale-in 0.28s cubic-bezier(0.16,1,0.3,1) both;
-  }
+  border-radius: 1.25rem;
+  animation: triumph-scale-in 0.28s cubic-bezier(0.16,1,0.3,1) both;
+  margin: auto 0;
+  flex-shrink: 0;
 }
 .dark .modal-panel {
   background: var(--dark-card);
@@ -364,3 +387,27 @@ a:not([class]) { color: inherit; }
 /* â”€â”€â”€ Misc â”€â”€â”€â”€â”€â”€ */
 a, button { -webkit-tap-highlight-color: transparent; }
 
+
+/* --- ConfirmDialog --- */
+@keyframes confirm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes confirm-pop {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* --- Toast --- */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(80px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateX(0) scale(1); max-height: 120px; margin-bottom: 0; }
+  to   { opacity: 0; transform: translateX(80px) scale(0.9); max-height: 0; margin-bottom: -8px; }
+}
+@keyframes toast-progress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}

@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Package, Factory, Users, DollarSign,
   BarChart3, Settings, ShoppingCart, Truck, Wrench,
-  ChevronDown, CircleUserRound, LogOut,
+  ChevronDown, CircleUserRound, LogOut, Landmark,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { signOut, useSession } from 'next-auth/react';
@@ -37,6 +37,7 @@ const navItems = [
     ],
   },
   { href: '/finance',   label: 'Finance',   icon: DollarSign },
+  { href: '/finance/tax-calculator', label: 'Tax Calculator', icon: Landmark },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/settings',  label: 'Settings',  icon: Settings },
 ];
