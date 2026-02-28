@@ -113,14 +113,26 @@ export interface Product {
   id: string;
   sku: string;
   name: string;
+  slug?: string;
   category_id: number;
   category_name?: string;
   description?: string;
+  short_description?: string;
   image_url?: string;
+  gallery_images?: string[];
   unit_price: number;
   cost_price: number;
   is_active: boolean;
+  is_featured?: boolean;
   min_stock: number;
+  tags?: string[];
+  meta_title?: string;
+  meta_description?: string;
+  specifications?: Record<string, string>;
+  variants?: { name: string; sku: string; price: number }[];
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PurchaseOrder {

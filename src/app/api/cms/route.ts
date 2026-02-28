@@ -6,7 +6,7 @@ import { logActivity } from '@/app/api/activity-logs/route';
 /* ═══════════════════════ GET ═══════════════════════ */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const type = searchParams.get('type'); // sections, items, services, gallery
+  const type = searchParams.get('type');
 
   try {
     /* ── CMS Sections with items ── */
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
                  'icon',i.icon,'image_url',i.image_url,'link',i.link,'value',i.value,'extra',i.extra,
                  'sort_order',i.sort_order,'is_active',i.is_active)
                ORDER BY i.sort_order
-             ) FROM cms_items i WHERE i.section_id=s.id AND i.is_active=true),
+             ) FROM cms_items i WHERE i.section_id=s.id),
              '[]'
            ) AS items
          FROM cms_sections s ${where} ORDER BY s.page, s.sort_order`, params
@@ -47,25 +47,60 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ gallery: res.rows, categories: cats.rows.map((c: any) => c.category) });
     }
 
-    /* ── All pages summary (meta) ── */
+    /* ── CMS Pages with SEO ── */
+    if (type === 'pages') {
+      const res = await db.query(`SELECT * FROM cms_pages ORDER BY sort_order`);
+      return NextResponse.json({ pages: res.rows });
+    }
+
+    /* ── CMS Settings ── */
+    if (type === 'settings') {
+      const category = searchParams.get('category');
+      const where = category ? `WHERE category=$1` : '';
+      const params = category ? [category] : [];
+      const res = await db.query(`SELECT * FROM cms_settings ${where} ORDER BY sort_order`, params);
+      return NextResponse.json({ settings: res.rows });
+    }
+
+    /* ── Revisions for entity ── */
+    if (type === 'revisions') {
+      const entityType = searchParams.get('entity_type');
+      const entityId = searchParams.get('entity_id');
+      if (!entityType || !entityId) return NextResponse.json({ error: 'entity_type and entity_id required' }, { status: 400 });
+      const res = await db.query(
+        `SELECT * FROM cms_revisions WHERE entity_type=$1 AND entity_id=$2 ORDER BY revision_num DESC LIMIT 50`,
+        [entityType, entityId]
+      );
+      return NextResponse.json({ revisions: res.rows });
+    }
+
+    /* ── All summary (meta) ── */
     if (type === 'meta') {
-      const pages = await db.query(`SELECT DISTINCT page FROM cms_sections ORDER BY page`);
-      const sectionCount = await db.query(`SELECT COUNT(*)::int AS c FROM cms_sections`);
-      const itemCount = await db.query(`SELECT COUNT(*)::int AS c FROM cms_items`);
-      const serviceCount = await db.query(`SELECT COUNT(*)::int AS c FROM cms_services`);
-      const galleryCount = await db.query(`SELECT COUNT(*)::int AS c FROM cms_gallery`);
+      const [pages, sectionCount, itemCount, serviceCount, galleryCount, productCount, mediaCount, settingsCount] = await Promise.all([
+        db.query(`SELECT id, slug, title, status FROM cms_pages ORDER BY sort_order`),
+        db.query(`SELECT COUNT(*)::int AS c FROM cms_sections`),
+        db.query(`SELECT COUNT(*)::int AS c FROM cms_items`),
+        db.query(`SELECT COUNT(*)::int AS c FROM cms_services`),
+        db.query(`SELECT COUNT(*)::int AS c FROM cms_gallery`),
+        db.query(`SELECT COUNT(*)::int AS c FROM products`),
+        db.query(`SELECT COUNT(*)::int AS c FROM cms_media`),
+        db.query(`SELECT COUNT(*)::int AS c FROM cms_settings`),
+      ]);
       return NextResponse.json({
-        pages: pages.rows.map((p: any) => p.page),
+        pages: pages.rows,
         counts: {
           sections: sectionCount.rows[0].c,
           items: itemCount.rows[0].c,
           services: serviceCount.rows[0].c,
           gallery: galleryCount.rows[0].c,
+          products: productCount.rows[0].c,
+          media: mediaCount.rows[0].c,
+          settings: settingsCount.rows[0].c,
         },
       });
     }
 
-    return NextResponse.json({ error: 'Specify type: sections, services, gallery, or meta' }, { status: 400 });
+    return NextResponse.json({ error: 'Specify type: sections, services, gallery, pages, settings, revisions, or meta' }, { status: 400 });
   } catch (err: any) {
     console.error('CMS GET error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -128,7 +163,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ gallery: res.rows[0] }, { status: 201 });
     }
 
-    return NextResponse.json({ error: 'Specify entity: section, item, service, or gallery' }, { status: 400 });
+    /* ── Create page ── */
+    if (b.entity === 'page') {
+      const res = await db.query(
+        `INSERT INTO cms_pages (slug, title, meta_title, meta_description, og_image, status, template, sort_order, is_active)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+        [b.slug, b.title, b.meta_title||null, b.meta_description||null, b.og_image||null, b.status||'draft', b.template||'default', b.sort_order||0, b.is_active!==false]
+      );
+      await logActivity({ userId, userName, userEmail, action: 'create', module: 'cms', entityType: 'cms_pages', entityId: String(res.rows[0].id), description: `Created page: ${b.title}` });
+      return NextResponse.json({ page: res.rows[0] }, { status: 201 });
+    }
+
+    return NextResponse.json({ error: 'Specify entity: section, item, service, gallery, or page' }, { status: 400 });
   } catch (err: any) {
     if (err.code === '23505') return NextResponse.json({ error: 'Duplicate entry' }, { status: 409 });
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -199,7 +245,29 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ gallery: res.rows[0] });
     }
 
-    return NextResponse.json({ error: 'Specify entity: section, item, service, or gallery' }, { status: 400 });
+    /* ── Update page ── */
+    if (b.entity === 'page') {
+      const res = await db.query(
+        `UPDATE cms_pages SET title=$1, meta_title=$2, meta_description=$3, og_image=$4,
+         status=$5, template=$6, custom_css=$7, sort_order=$8, is_active=$9, updated_at=NOW()
+         WHERE id=$10 RETURNING *`,
+        [b.title, b.meta_title||null, b.meta_description||null, b.og_image||null, b.status||'published', b.template||'default', b.custom_css||null, b.sort_order||0, b.is_active!==false, b.id]
+      );
+      if (res.rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      await logActivity({ userId, userName, userEmail, action: 'update', module: 'cms', entityType: 'cms_pages', entityId: String(b.id), description: `Updated page: ${b.title}` });
+      return NextResponse.json({ page: res.rows[0] });
+    }
+
+    /* ── Update settings (batch) ── */
+    if (b.entity === 'settings') {
+      for (const s of b.settings || []) {
+        await db.query(`UPDATE cms_settings SET value=$1, updated_at=NOW() WHERE key=$2`, [s.value ?? '', s.key]);
+      }
+      await logActivity({ userId, userName, userEmail, action: 'update', module: 'cms', entityType: 'cms_settings', description: `Updated ${(b.settings || []).length} CMS settings` });
+      return NextResponse.json({ updated: true });
+    }
+
+    return NextResponse.json({ error: 'Specify entity' }, { status: 400 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -215,7 +283,10 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get('id');
   if (!entity || !id) return NextResponse.json({ error: 'entity and id required' }, { status: 400 });
 
-  const tableMap: Record<string, string> = { section: 'cms_sections', item: 'cms_items', service: 'cms_services', gallery: 'cms_gallery' };
+  const tableMap: Record<string, string> = {
+    section: 'cms_sections', item: 'cms_items', service: 'cms_services',
+    gallery: 'cms_gallery', page: 'cms_pages',
+  };
   const table = tableMap[entity];
   if (!table) return NextResponse.json({ error: 'Invalid entity' }, { status: 400 });
 

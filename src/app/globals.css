@@ -325,7 +325,7 @@ a:not([class]) { color: inherit; }
   backdrop-filter: blur(4px);
   animation: triumph-fade-in 0.2s ease both;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
   overflow-y: auto;
@@ -333,10 +333,11 @@ a:not([class]) { color: inherit; }
 .modal-panel {
   width: 100%;
   max-width: 36rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
   background: #ffffff;
   border-radius: 1.25rem;
   animation: triumph-scale-in 0.28s cubic-bezier(0.16,1,0.3,1) both;
-  margin: auto 0;
   flex-shrink: 0;
 }
 .dark .modal-panel {
