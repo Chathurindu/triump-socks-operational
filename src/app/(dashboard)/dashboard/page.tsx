@@ -18,7 +18,7 @@ import {
 
 /* ── types ──────────────────────────────────────────────── */
 type Widget = {
-  id: string; label: string; type: 'stat' | 'chart' | 'list';
+  id: string; label: string; type: 'stat' | 'chart' | 'list' | 'mixed';
   enabled: boolean; order: number; size: number;
 };
 
@@ -107,6 +107,7 @@ export default function DashboardPage() {
   const enabled = widgets.filter(w => w.enabled).sort((a, b) => a.order - b.order);
   const stats  = enabled.filter(w => w.type === 'stat');
   const charts = enabled.filter(w => w.type === 'chart');
+  const mixed  = enabled.filter(w => w.type === 'mixed');
   const lists  = enabled.filter(w => w.type === 'list');
 
   const renderStat = (w: Widget, i: number) => {
@@ -161,7 +162,7 @@ export default function DashboardPage() {
     );
     if (w.id === 'bar-chart') return (
       <Card key={w.id} title="Top Products by Units Sold">
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={230}>
           <BarChart data={data.topProducts.slice(0,6)} layout="vertical" margin={{ left: 10, right: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
             <XAxis type="number" tick={{ fontSize: 10 }} />
@@ -178,7 +179,7 @@ export default function DashboardPage() {
   const renderList = (w: Widget) => {
     if (w.id === 'recent-txn') return (
       <Card key={w.id} title="Recent Transactions">
-        <div className="space-y-1">
+        <div className="space-y-1 max-h-[280px] overflow-y-auto">
           {data.recentTransactions.map(t => (
             <div key={t.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-700/50 last:border-none">
               <div className="flex items-center gap-2.5">
@@ -199,7 +200,7 @@ export default function DashboardPage() {
     );
     if (w.id === 'overdue-inv') return (
       <Card key={w.id} title="Overdue Invoices">
-        <div className="space-y-1">
+        <div className="space-y-1 max-h-[280px] overflow-y-auto">
           {(data.overdueInvoices??[]).map((inv: any) => (
             <div key={inv.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-700/50 last:border-none">
               <div className="flex items-center gap-2.5">
@@ -218,7 +219,7 @@ export default function DashboardPage() {
     );
     if (w.id === 'recent-exp') return (
       <Card key={w.id} title="Recent Expenses">
-        <div className="space-y-1">
+        <div className="space-y-1 max-h-[280px] overflow-y-auto">
           {(data.recentExpenses??[]).map((exp: any) => (
             <div key={exp.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-700/50 last:border-none">
               <div className="flex items-center gap-2.5">
@@ -237,7 +238,7 @@ export default function DashboardPage() {
     );
     if (w.id === 'quotes') return (
       <Card key={w.id} title="Pending Quotations">
-        <div className="space-y-1">
+        <div className="space-y-1 max-h-[280px] overflow-y-auto">
           {(data.pendingQuotations??[]).map((q: any) => (
             <div key={q.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-700/50 last:border-none">
               <div className="flex items-center gap-2.5">
@@ -264,9 +265,9 @@ export default function DashboardPage() {
         <Button variant="ghost" size="sm" icon={<Settings2 size={13} />} onClick={() => setConfigOpen(true)}>Customize</Button>
       </div>
 
-      {/* Stats */}
+      {/* Stats — single row of 4 key KPIs */}
       {stats.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((w, i) => (
             <div key={w.id} draggable onDragStart={() => handleDragStart(widgets.findIndex(x => x.id===w.id))}
               onDragOver={e => handleDragOver(e, widgets.findIndex(x => x.id===w.id))} onDragEnd={handleDragEnd}
@@ -275,7 +276,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Charts */}
+      {/* Charts — Area chart (2/3) + Pie chart (1/3) */}
       {charts.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {charts.map(w => (
@@ -286,7 +287,18 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Lists */}
+      {/* Mixed row — bar chart + lists side by side */}
+      {mixed.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {mixed.map(w => (
+            <div key={w.id} draggable onDragStart={() => handleDragStart(widgets.findIndex(x => x.id===w.id))}
+              onDragOver={e => handleDragOver(e, widgets.findIndex(x => x.id===w.id))} onDragEnd={handleDragEnd}
+              className="cursor-grab active:cursor-grabbing">{renderChart(w) ?? renderList(w)}</div>
+          ))}
+        </div>
+      )}
+
+      {/* Lists — remaining list widgets */}
       {lists.length > 0 && (
         <div className={`grid grid-cols-1 gap-5 ${lists.length>=3?'lg:grid-cols-3':lists.length===2?'lg:grid-cols-2':''}`}>
           {lists.map(w => (

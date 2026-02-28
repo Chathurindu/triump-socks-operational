@@ -6,6 +6,10 @@ import {
   BarChart3, Settings, ShoppingCart, Truck, Wrench,
   ChevronDown, CircleUserRound, LogOut, Landmark,
   Shield, Globe, Activity, FileText, Receipt, Wallet,
+  ClipboardCheck, Layers, AlertTriangle, CreditCard,
+  TrendingUp, Building2, PackageCheck, Calendar,
+  Target, FileBarChart, Upload, QrCode, MapPin,
+  PieChart, Navigation,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { signOut, useSession } from 'next-auth/react';
@@ -19,16 +23,29 @@ const navItems = [
       { href: '/production', label: 'Production', icon: Factory },
       { href: '/inventory',  label: 'Inventory',  icon: Package },
       { href: '/machines',   label: 'Machines',   icon: Wrench },
+      { href: '/bom',        label: 'Bill of Materials', icon: Layers },
+      { href: '/qc',         label: 'Quality Control', icon: ClipboardCheck },
+      { href: '/waste',      label: 'Waste Tracking', icon: AlertTriangle },
+      { href: '/maintenance', label: 'Maintenance', icon: Wrench },
+    ],
+  },
+  {
+    label: 'Warehouse', icon: Building2, children: [
+      { href: '/warehouse',       label: 'Bin Locations', icon: MapPin },
+      { href: '/grn',             label: 'Goods Receipt', icon: PackageCheck },
+      { href: '/reorder-alerts',  label: 'Reorder Alerts', icon: AlertTriangle },
     ],
   },
   {
     label: 'Trade', icon: ShoppingCart, children: [
-      { href: '/purchases',  label: 'Purchases',   icon: ShoppingCart },
-      { href: '/sales',      label: 'Sales',       icon: Truck },
-      { href: '/quotations', label: 'Quotations',  icon: FileText },
-      { href: '/invoices',   label: 'Invoices',    icon: Receipt },
-      { href: '/suppliers',  label: 'Suppliers',   icon: CircleUserRound },
-      { href: '/customers',  label: 'Customers',   icon: CircleUserRound },
+      { href: '/purchases',   label: 'Purchases',   icon: ShoppingCart },
+      { href: '/sales',       label: 'Sales',       icon: Truck },
+      { href: '/quotations',  label: 'Quotations',  icon: FileText },
+      { href: '/invoices',    label: 'Invoices',    icon: Receipt },
+      { href: '/deliveries',  label: 'Deliveries',  icon: Navigation },
+      { href: '/suppliers',   label: 'Suppliers',   icon: CircleUserRound },
+      { href: '/customers',   label: 'Customers',   icon: CircleUserRound },
+      { href: '/credit',      label: 'Credit Mgmt', icon: CreditCard },
     ],
   },
   {
@@ -37,16 +54,32 @@ const navItems = [
       { href: '/hr/attendance', label: 'Attendance', icon: Users },
       { href: '/hr/payroll',    label: 'Payroll',    icon: DollarSign },
       { href: '/hr/leave',      label: 'Leave',      icon: Users },
+      { href: '/shifts',        label: 'Shift Schedule', icon: Calendar },
+      { href: '/kpi',           label: 'KPI & Appraisals', icon: Target },
     ],
   },
   {
     label: 'Finance', icon: DollarSign, children: [
       { href: '/finance',              label: 'Transactions',   icon: DollarSign },
       { href: '/expenses',             label: 'Expenses',       icon: Wallet },
+      { href: '/pnl',                  label: 'Profit & Loss',  icon: PieChart },
+      { href: '/bank-reconciliation',  label: 'Bank Recon.',    icon: Landmark },
       { href: '/finance/tax-calculator', label: 'Tax Calculator', icon: Landmark },
     ],
   },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  {
+    label: 'Insights', icon: BarChart3, children: [
+      { href: '/analytics',       label: 'Analytics',   icon: BarChart3 },
+      { href: '/demand-forecast',  label: 'Demand Forecast', icon: TrendingUp },
+      { href: '/reports',          label: 'Report Builder', icon: FileBarChart },
+    ],
+  },
+  {
+    label: 'Tools', icon: Settings, children: [
+      { href: '/barcode',        label: 'Barcode / QR', icon: QrCode },
+      { href: '/import-export',  label: 'Import / Export', icon: Upload },
+    ],
+  },
   {
     label: 'Administration', icon: Shield, children: [
       { href: '/admin/users',    label: 'User Management', icon: Users },
