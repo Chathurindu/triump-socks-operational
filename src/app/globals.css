@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
   --sidebar-width: 220px;
@@ -36,15 +36,16 @@ body {
   color: var(--dark-text);
 }
 
-a { color: inherit; text-decoration: none; }
+a { text-decoration: none; }
+a:not([class]) { color: inherit; }
 
-/* ─── Scrollbar ────── */
+/* â”€â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€ */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 9999px; }
 .dark ::-webkit-scrollbar-thumb { background: var(--dark-border-2); }
 
-/* ─── Table ────── */
+/* â”€â”€â”€ Table â”€â”€â”€â”€â”€â”€ */
 .triumph-table th {
   font-size: 0.69rem;
   font-weight: 600;
@@ -93,7 +94,7 @@ a { color: inherit; text-decoration: none; }
 /* Horizontal scroll on mobile */
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-/* ─── Card ────── */
+/* â”€â”€â”€ Card â”€â”€â”€â”€â”€â”€ */
 .triumph-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -113,7 +114,7 @@ a { color: inherit; text-decoration: none; }
   border-color: var(--dark-border-2);
 }
 
-/* ─── Input ────── */
+/* â”€â”€â”€ Input â”€â”€â”€â”€â”€â”€ */
 .triumph-input {
   width: 100%;
   padding: 0.4rem 0.65rem;
@@ -148,7 +149,7 @@ a { color: inherit; text-decoration: none; }
 }
 .dark .triumph-label { color: var(--dark-text-2); }
 
-/* ─── Sidebar ────── */
+/* â”€â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€ */
 .sidebar-bg { background: var(--dark-bg); border-right: 1px solid var(--dark-border); }
 .sidebar-link {
   display: flex;
@@ -184,7 +185,7 @@ a { color: inherit; text-decoration: none; }
 }
 .sidebar-link { position: relative; }
 
-/* ─── Dashboard layout overrides ────── */
+/* â”€â”€â”€ Dashboard layout overrides â”€â”€â”€â”€â”€â”€ */
 .dark .dash-layout-bg { background-color: var(--dark-bg); }
 .dark .topbar-bg {
   background-color: rgba(7,16,30,0.85);
@@ -192,7 +193,7 @@ a { color: inherit; text-decoration: none; }
   backdrop-filter: blur(12px);
 }
 
-/* ─── Mobile layout ────── */
+/* â”€â”€â”€ Mobile layout â”€â”€â”€â”€â”€â”€ */
 .mobile-header {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -287,7 +288,7 @@ a { color: inherit; text-decoration: none; }
   .sidebar-link:hover { transform: none; }
 }
 
-/* ─── Modal overlay ────── */
+/* â”€â”€â”€ Modal overlay â”€â”€â”€â”€â”€â”€ */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 100;
   background: rgba(0,0,0,0.55);
@@ -324,10 +325,10 @@ a { color: inherit; text-decoration: none; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Stat value ────── */
+/* â”€â”€â”€ Stat value â”€â”€â”€â”€â”€â”€ */
 .stat-value { font-variant-numeric: tabular-nums; }
 
-/* ─── Keyframes ────── */
+/* â”€â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€ */
 @keyframes triumph-fade-up {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -345,7 +346,7 @@ a { color: inherit; text-decoration: none; }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* ─── Animation utilities ────── */
+/* â”€â”€â”€ Animation utilities â”€â”€â”€â”€â”€â”€ */
 .anim-fade-up    { animation: triumph-fade-up    0.4s cubic-bezier(0.16,1,0.3,1) both; }
 .anim-fade-in    { animation: triumph-fade-in    0.3s ease both; }
 .anim-scale-in   { animation: triumph-scale-in   0.35s cubic-bezier(0.16,1,0.3,1) both; }
@@ -357,215 +358,9 @@ a { color: inherit; text-decoration: none; }
 .anim-d5 { animation-delay: 0.25s; }
 .anim-d6 { animation-delay: 0.30s; }
 
-/* ─── Page content ────── */
+/* â”€â”€â”€ Page content â”€â”€â”€â”€â”€â”€ */
 .page-content { animation: triumph-fade-up 0.42s cubic-bezier(0.16,1,0.3,1) both; }
 
-/* ─── Misc ────── */
-a, button { -webkit-tap-highlight-color: transparent; 
-
-  -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: #f1f5f9;
-  color: #0f172a;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 13.5px;
-}
-
-.dark body, body.dark {
-  background-color: #0b1120;
-  color: #e2e8f0;
-}
-
-a { color: inherit; text-decoration: none; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 9999px; }
-.dark ::-webkit-scrollbar-thumb { background: #475569; }
-
-/* Table */
-.triumph-table th {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background-color: #f8fafc;
-  padding: 0.4rem 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
-.dark .triumph-table th {
-  background-color: #1e293b;
-  color: #64748b;
-  border-bottom-color: #334155;
-}
-.triumph-table td {
-  padding: 0.45rem 0.75rem;
-  font-size: 0.8125rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #374151;
-}
-.dark .triumph-table td {
-  border-bottom-color: #1e293b;
-  color: #cbd5e1;
-}
-.triumph-table tr:hover td {
-  background-color: #f8fafc;
-}
-.dark .triumph-table tr:hover td {
-  background-color: rgba(30,41,59,0.55);
-}
-/* Table row stagger */
-.triumph-table tbody tr {
-  animation: triumph-fade-up 0.26s cubic-bezier(0.16,1,0.3,1) both;
-}
-.triumph-table tbody tr:nth-child(1)  { animation-delay: 0.02s; }
-.triumph-table tbody tr:nth-child(2)  { animation-delay: 0.04s; }
-.triumph-table tbody tr:nth-child(3)  { animation-delay: 0.06s; }
-.triumph-table tbody tr:nth-child(4)  { animation-delay: 0.08s; }
-.triumph-table tbody tr:nth-child(5)  { animation-delay: 0.10s; }
-.triumph-table tbody tr:nth-child(6)  { animation-delay: 0.12s; }
-.triumph-table tbody tr:nth-child(7)  { animation-delay: 0.14s; }
-.triumph-table tbody tr:nth-child(8)  { animation-delay: 0.16s; }
-.triumph-table tbody tr:nth-child(9)  { animation-delay: 0.18s; }
-.triumph-table tbody tr:nth-child(10) { animation-delay: 0.20s; }
-
-/* Card */
-.triumph-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.875rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.05);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-.triumph-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-}
-.dark .triumph-card {
-  background: #1e293b;
-  border-color: #334155;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-.dark .triumph-card:hover {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-}
-
-/* Input */
-.triumph-input {
-  width: 100%;
-  padding: 0.375rem 0.625rem;
-  font-size: 0.8125rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.5rem;
-  background: #ffffff;
-  color: #0f172a;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.triumph-input:focus {
-  border-color: #d4730a;
-  box-shadow: 0 0 0 3px rgba(212,115,10,0.15);
-}
-.dark .triumph-input {
-  background: #1e293b;
-  border-color: #475569;
-  color: #e2e8f0;
-}
-.dark .triumph-input:focus {
-  border-color: #f0ab3e;
-  box-shadow: 0 0 0 3px rgba(240,171,62,0.15);
-}
-.dark .triumph-input::placeholder { color: #64748b; }
-.triumph-label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: #475569;
-  margin-bottom: 0.2rem;
-}
-.dark .triumph-label { color: #94a3b8; }
-
-/* Sidebar link */
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.45rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #94a3b8;
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  cursor: pointer;
-  user-select: none;
-}
-.sidebar-link:hover {
-  background-color: rgba(255,255,255,0.08);
-  color: #e2e8f0;
-  transform: translateX(2px);
-}
-.sidebar-link.active {
-  background-color: rgba(212,115,10,0.2);
-  color: #fbbf24;
-  transform: translateX(2px);
-}
-
-.stat-value { font-variant-numeric: tabular-nums; }
-
-/* ─── Keyframes ─────────────────────────────────────────────── */
-@keyframes triumph-fade-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes triumph-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes triumph-scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes triumph-slide-right {
-  from { opacity: 0; transform: translateX(-10px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes triumph-shimmer {
-  from { background-position: -200px 0; }
-  to   { background-position: calc(200px + 100%) 0; }
-}
-
-/* ─── Animation utility classes ─────────────────────────────── */
-.anim-fade-up    { animation: triumph-fade-up    0.4s cubic-bezier(0.16,1,0.3,1) both; }
-.anim-fade-in    { animation: triumph-fade-in    0.3s ease both; }
-.anim-scale-in   { animation: triumph-scale-in   0.35s cubic-bezier(0.16,1,0.3,1) both; }
-.anim-slide-right{ animation: triumph-slide-right 0.3s cubic-bezier(0.16,1,0.3,1) both; }
-
-/* Stagger delay helpers */
-.anim-d1 { animation-delay: 0.05s; }
-.anim-d2 { animation-delay: 0.10s; }
-.anim-d3 { animation-delay: 0.15s; }
-.anim-d4 { animation-delay: 0.20s; }
-.anim-d5 { animation-delay: 0.25s; }
-.anim-d6 { animation-delay: 0.30s; }
-
-/* ─── Page content fade-up ───────────────────────────────────── */
-.page-content {
-  animation: triumph-fade-up 0.42s cubic-bezier(0.16,1,0.3,1) both;
-}
-
-/* ─── General interaction smoothing ─────────────────────────── */
+/* â”€â”€â”€ Misc â”€â”€â”€â”€â”€â”€ */
 a, button { -webkit-tap-highlight-color: transparent; }
 
-/* ─── Dark mode surface overrides ───────────────────────────────────────────── */
-/* Use !important to reliably override Tailwind-generated dark: utility classes  */
-.dark .bg-gray-950 { background-color: #020617 !important; }
-.dark .bg-gray-900 { background-color: #0f172a !important; }
-.dark .bg-gray-800 { background-color: #1e293b !important; }
-.dark .border-gray-700 { border-color: #334155 !important; }
-.dark .border-gray-800 { border-color: #1e293b !important; }
-.dark .border-gray-100, .dark .border-gray-200 { border-color: #1e293b !important; }

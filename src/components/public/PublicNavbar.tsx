@@ -14,7 +14,7 @@ export default function PublicNavbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+    <header className="sticky top-0 z-50 bg-white dark:bg-gray-950 shadow-sm dark:shadow-[0_1px_0_rgba(255,255,255,0.07)] border-b border-gray-100 dark:border-gray-800/60">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -43,7 +43,7 @@ export default function PublicNavbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-6 py-4 flex flex-col gap-4">
+        <div className="md:hidden bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 px-6 py-4 flex flex-col gap-4">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="text-sm text-gray-700 dark:text-gray-200 font-medium">{n.label}</Link>
           ))}
