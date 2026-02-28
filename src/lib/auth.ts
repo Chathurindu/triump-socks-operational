@@ -68,7 +68,7 @@ export const authOptions: NextAuthOptions = {
             avatar:      user.avatar_url,
           };
         } catch (err) {
-          console.error('Auth error');
+          console.error('Auth DB error:', err instanceof Error ? err.message : err);
           return null;
         }
       },
