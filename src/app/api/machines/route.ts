@@ -17,6 +17,8 @@ const SORT_MAP: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   /* ── meta endpoint ── */
@@ -35,7 +37,10 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 'm.created_at';
 
   try {
-    const typeFilter = type ? `AND m.type = '${type.replace(/'/g, "''")}'` : '';
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
+    let typeFilter = '';
+    if (type) { typeFilter = `AND m.type = $${idx}`; params.push(type); idx++; }
     const whereBase = `
       FROM machines m
       WHERE (m.name ILIKE $1 OR m.machine_code ILIKE $1 OR m.brand ILIKE $1)
@@ -48,7 +53,7 @@ export async function GET(req: NextRequest) {
              THEN TRUE ELSE FALSE END AS maintenance_due
       ${whereBase}
       ORDER BY ${orderCol} ${sortDir}
-      LIMIT $2 OFFSET $3
+      LIMIT $${idx} OFFSET $${idx + 1}
     `;
     const countQ = `SELECT COUNT(*) ${whereBase}`;
     const summaryQ = `
@@ -63,8 +68,8 @@ export async function GET(req: NextRequest) {
     `;
 
     const [res, countRes, summaryRes] = await Promise.all([
-      db.query(dataQ, [`%${search}%`, limit, offset]),
-      db.query(countQ, [`%${search}%`]),
+      db.query(dataQ, [...params, limit, offset]),
+      db.query(countQ, params),
       db.query(summaryQ),
     ]);
 

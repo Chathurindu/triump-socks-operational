@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireRole } from '@/lib/auth-utils';
 
 /**
  * Payroll Calculator API
@@ -26,6 +27,8 @@ const STATUTORY = {
 };
 
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   /* Meta – return employees and statutory config */
@@ -89,6 +92,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authErr = await requireRole('manager');
+  if (authErr) return authErr;
   try {
     const b = await req.json();
     const res = await db.query(

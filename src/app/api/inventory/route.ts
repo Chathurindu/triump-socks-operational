@@ -17,6 +17,8 @@ const SORT_MAP: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   /* ── meta endpoint: categories + suppliers for forms ── */
@@ -39,7 +41,10 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 'i.created_at';
 
   try {
-    const catFilter = catType ? `AND ic.type = '${catType.replace(/'/g, "''")}'` : '';
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
+    let catFilter = '';
+    if (catType) { catFilter = `AND ic.type = $${idx}`; params.push(catType); idx++; }
     const whereBase = `
       FROM inventory_items i
       LEFT JOIN item_categories ic ON ic.id = i.category_id
@@ -55,7 +60,7 @@ export async function GET(req: NextRequest) {
              CASE WHEN i.current_stock <= i.reorder_level THEN TRUE ELSE FALSE END AS low_stock
       ${whereBase}
       ORDER BY ${orderCol} ${sortDir}
-      LIMIT $2 OFFSET $3
+      LIMIT $${idx} OFFSET $${idx + 1}
     `;
     const countQ = `SELECT COUNT(*) ${whereBase}`;
     const summaryQ = `
@@ -71,8 +76,8 @@ export async function GET(req: NextRequest) {
     `;
 
     const [res, countRes, summaryRes] = await Promise.all([
-      db.query(dataQ, [`%${search}%`, limit, offset]),
-      db.query(countQ, [`%${search}%`]),
+      db.query(dataQ, [...params, limit, offset]),
+      db.query(countQ, params),
       db.query(summaryQ),
     ]);
 

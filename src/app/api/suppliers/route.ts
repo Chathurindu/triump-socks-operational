@@ -8,6 +8,8 @@ const SORT_MAP: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   if (searchParams.get('meta') === '1') {
@@ -25,15 +27,18 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 's.created_at';
 
   try {
-    const catF = cat ? `AND s.category = '${cat.replace(/'/g, "''")}'` : '';
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
+    let catF = '';
+    if (cat) { catF = `AND s.category = $${idx}`; params.push(cat); idx++; }
     const whereBase = `
       FROM suppliers s
       WHERE (s.name ILIKE $1 OR s.contact ILIKE $1 OR s.email ILIKE $1 OR s.phone ILIKE $1)
       ${catF}
     `;
     const [res, countRes, summaryRes] = await Promise.all([
-      db.query(`SELECT s.* ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $2 OFFSET $3`, [`%${search}%`, limit, offset]),
-      db.query(`SELECT COUNT(*) ${whereBase}`, [`%${search}%`]),
+      db.query(`SELECT s.* ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $${idx} OFFSET $${idx + 1}`, [...params, limit, offset]),
+      db.query(`SELECT COUNT(*) ${whereBase}`, params),
       db.query(`
         SELECT COUNT(*)::int AS total,
           COUNT(*) FILTER (WHERE is_active=TRUE)::int AS active,

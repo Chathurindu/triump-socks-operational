@@ -1,17 +1,34 @@
 'use client';
-import { useState, FormEvent } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect, FormEvent } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail]         = useState('admin@triumphsocks.com');
-  const [password, setPassword]   = useState('password123');
+  const { data: session, status } = useSession();
+  const [email, setEmail]         = useState('');
+  const [password, setPassword]   = useState('');
   const [showPw, setShowPw]       = useState(false);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
+
+  /* If already authenticated, redirect to dashboard */
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/dashboard');
+    }
+  }, [status, router]);
+
+  /* Show nothing while checking session */
+  if (status === 'loading' || status === 'authenticated') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <Loader2 size={24} className="animate-spin text-amber-600" />
+      </div>
+    );
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

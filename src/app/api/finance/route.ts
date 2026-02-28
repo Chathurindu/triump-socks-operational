@@ -9,6 +9,8 @@ const SORT_MAP: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   if (searchParams.get('meta') === '1') {
@@ -28,9 +30,14 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 't.created_at';
 
   try {
-    const typeF = type ? `AND t.txn_type = '${type.replace(/'/g, "''")}'` : '';
-    const fromF = from ? `AND t.txn_date >= '${from}'` : '';
-    const toF   = to   ? `AND t.txn_date <= '${to}'` : '';
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
+    let typeF = '';
+    let fromF = '';
+    let toF = '';
+    if (type) { typeF = `AND t.txn_type = $${idx}`; params.push(type); idx++; }
+    if (from) { fromF = `AND t.txn_date >= $${idx}`; params.push(from); idx++; }
+    if (to)   { toF   = `AND t.txn_date <= $${idx}`; params.push(to); idx++; }
     const whereBase = `
       FROM transactions t
       LEFT JOIN accounts a ON a.id = t.account_id
@@ -38,8 +45,8 @@ export async function GET(req: NextRequest) {
       ${typeF} ${fromF} ${toF}
     `;
     const [res, countRes, summaryRes, accountsRes] = await Promise.all([
-      db.query(`SELECT t.*, a.name AS account_name ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $2 OFFSET $3`, [`%${search}%`, limit, offset]),
-      db.query(`SELECT COUNT(*) ${whereBase}`, [`%${search}%`]),
+      db.query(`SELECT t.*, a.name AS account_name ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $${idx} OFFSET $${idx + 1}`, [...params, limit, offset]),
+      db.query(`SELECT COUNT(*) ${whereBase}`, params),
       db.query(`
         SELECT COUNT(*)::int AS total_txns,
           COALESCE(SUM(amount) FILTER (WHERE txn_type='income'),0)::numeric AS total_income,

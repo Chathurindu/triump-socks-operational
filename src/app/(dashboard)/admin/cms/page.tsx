@@ -1184,147 +1184,192 @@ export default function CMSPage() {
         </div>
       </Modal>
 
-      {/* ═══════════ Product Modal ═══════════ */}
-      <Modal open={productModalOpen} onClose={() => setProductModalOpen(false)} title={editProduct ? 'Edit Product' : 'New Product'} size="xl">
-        <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4">
-          {/* Basic info */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-2 flex items-center gap-1.5"><Package size={12} /> Basic Information</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div><label className="triumph-label">Product Name *</label><input className="triumph-input" value={productForm.name} onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))} /></div>
-              <div><label className="triumph-label">SKU *</label><input className="triumph-input font-mono text-xs" value={productForm.sku} onChange={e => setProductForm(p => ({ ...p, sku: e.target.value }))} /></div>
-              <div>
-                <label className="triumph-label">Category</label>
-                <select className="triumph-input" value={productForm.category_id} onChange={e => setProductForm(p => ({ ...p, category_id: e.target.value }))}>
-                  <option value="">— Select —</option>
-                  {(productMeta.categories || []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+      {/* ═══════════ Product Form Panel (full-page overlay under header) ═══════════ */}
+      {productModalOpen && (
+        <div className="fixed inset-0 z-50">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setProductModalOpen(false)}
+            style={{ animation: 'triumph-fade-in 0.2s ease both' }} />
+          {/* Panel */}
+          <div
+            className="absolute left-0 right-0 bg-white dark:bg-[var(--dark-card)] shadow-2xl overflow-hidden flex flex-col"
+            style={{
+              top: 'var(--header-height, 56px)',
+              bottom: 0,
+              marginLeft: 'var(--sidebar-width, 0px)',
+              animation: 'cms-panel-slide-down 0.3s cubic-bezier(0.16,1,0.3,1) both',
+            }}
+          >
+            {/* Panel header — sticky */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-[var(--dark-border)] bg-white dark:bg-[var(--dark-card)] flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <Package size={16} className="text-amber-600" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-800 dark:text-[var(--dark-text)]">
+                    {editProduct ? 'Edit Product' : 'New Product'}
+                  </h2>
+                  <p className="text-[0.6rem] text-slate-400">{editProduct ? `Editing: ${editProduct.name}` : 'Fill in the product details below'}</p>
+                </div>
               </div>
-              <div className="sm:col-span-3"><label className="triumph-label">Short Description</label><input className="triumph-input" value={productForm.short_description} onChange={e => setProductForm(p => ({ ...p, short_description: e.target.value }))} placeholder="Brief product summary…" /></div>
-              <div className="sm:col-span-3"><label className="triumph-label">Full Description</label><textarea className="triumph-input resize-none" rows={3} value={productForm.description} onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))} /></div>
+              <div className="flex items-center gap-2">
+                {editProduct && (
+                  <Button variant="ghost" size="sm" icon={<History size={12} />} onClick={() => openRevisions('product', editProduct.id, editProduct.name)}>History</Button>
+                )}
+                <Button variant="secondary" size="sm" onClick={() => setProductModalOpen(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleSaveProduct} loading={saving} icon={<Save size={12} />}>
+                  {editProduct ? 'Save Product' : 'Create Product'}
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Pricing */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-2 flex items-center gap-1.5"><Hash size={12} /> Pricing & Stock</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div><label className="triumph-label">Unit Price (Rs)</label><input type="number" className="triumph-input" value={productForm.unit_price} onChange={e => setProductForm(p => ({ ...p, unit_price: parseFloat(e.target.value) || 0 }))} /></div>
-              <div><label className="triumph-label">Cost Price (Rs)</label><input type="number" className="triumph-input" value={productForm.cost_price} onChange={e => setProductForm(p => ({ ...p, cost_price: parseFloat(e.target.value) || 0 }))} /></div>
-              <div><label className="triumph-label">Min Stock</label><input type="number" className="triumph-input" value={productForm.min_stock} onChange={e => setProductForm(p => ({ ...p, min_stock: parseInt(e.target.value) || 0 }))} /></div>
-              <div><label className="triumph-label">Sort Order</label><input type="number" className="triumph-input" value={productForm.sort_order} onChange={e => setProductForm(p => ({ ...p, sort_order: parseInt(e.target.value) || 0 }))} /></div>
-            </div>
-          </div>
+            {/* Scrollable form body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* Basic info */}
+              <div className="rounded-xl border border-slate-200 dark:border-[var(--dark-border)] p-4">
+                <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-3 flex items-center gap-1.5"><Package size={12} /> Basic Information</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div><label className="triumph-label">Product Name *</label><input className="triumph-input" value={productForm.name} onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))} /></div>
+                  <div><label className="triumph-label">SKU *</label><input className="triumph-input font-mono text-xs" value={productForm.sku} onChange={e => setProductForm(p => ({ ...p, sku: e.target.value }))} /></div>
+                  <div>
+                    <label className="triumph-label">Category</label>
+                    <select className="triumph-input" value={productForm.category_id} onChange={e => setProductForm(p => ({ ...p, category_id: e.target.value }))}>
+                      <option value="">— Select —</option>
+                      {(productMeta.categories || []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-3"><label className="triumph-label">Short Description</label><input className="triumph-input" value={productForm.short_description} onChange={e => setProductForm(p => ({ ...p, short_description: e.target.value }))} placeholder="Brief product summary…" /></div>
+                  <div className="sm:col-span-3"><label className="triumph-label">Full Description</label><textarea className="triumph-input resize-none" rows={3} value={productForm.description} onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))} /></div>
+                </div>
+              </div>
 
-          {/* Images */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-2 flex items-center gap-1.5"><Image size={12} /> Images</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <ImageField label="Main Product Image" value={productForm.image_url} target="product_image" onChange={v => setProductForm(p => ({ ...p, image_url: v }))} />
-              <div>
-                <label className="triumph-label">Gallery Images</label>
-                <button type="button" onClick={() => openMediaPicker('product_gallery', true)}
-                  className="w-full px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-[var(--dark-border)] text-xs text-slate-500 hover:border-amber-400 hover:text-amber-600 transition-colors flex items-center justify-center gap-1.5">
-                  <ImagePlus size={13} /> Add Gallery Images
-                </button>
-                {productForm.gallery_images.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {productForm.gallery_images.map((img, i) => (
-                      <div key={i} className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-[var(--dark-border)] group">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
-                        <button onClick={() => setProductForm(p => ({ ...p, gallery_images: p.gallery_images.filter((_, idx) => idx !== i) }))}
-                          className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <X size={14} className="text-white" />
-                        </button>
+              {/* Pricing */}
+              <div className="rounded-xl border border-slate-200 dark:border-[var(--dark-border)] p-4">
+                <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-3 flex items-center gap-1.5"><Hash size={12} /> Pricing & Stock</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div><label className="triumph-label">Unit Price (Rs)</label><input type="number" className="triumph-input" value={productForm.unit_price} onChange={e => setProductForm(p => ({ ...p, unit_price: parseFloat(e.target.value) || 0 }))} /></div>
+                  <div><label className="triumph-label">Cost Price (Rs)</label><input type="number" className="triumph-input" value={productForm.cost_price} onChange={e => setProductForm(p => ({ ...p, cost_price: parseFloat(e.target.value) || 0 }))} /></div>
+                  <div><label className="triumph-label">Min Stock</label><input type="number" className="triumph-input" value={productForm.min_stock} onChange={e => setProductForm(p => ({ ...p, min_stock: parseInt(e.target.value) || 0 }))} /></div>
+                  <div><label className="triumph-label">Sort Order</label><input type="number" className="triumph-input" value={productForm.sort_order} onChange={e => setProductForm(p => ({ ...p, sort_order: parseInt(e.target.value) || 0 }))} /></div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* Images */}
+                <div className="rounded-xl border border-slate-200 dark:border-[var(--dark-border)] p-4">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-3 flex items-center gap-1.5"><Image size={12} /> Images</p>
+                  <div className="space-y-3">
+                    <ImageField label="Main Product Image" value={productForm.image_url} target="product_image" onChange={v => setProductForm(p => ({ ...p, image_url: v }))} />
+                    <div>
+                      <label className="triumph-label">Gallery Images</label>
+                      <button type="button" onClick={() => openMediaPicker('product_gallery', true)}
+                        className="w-full px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-[var(--dark-border)] text-xs text-slate-500 hover:border-amber-400 hover:text-amber-600 transition-colors flex items-center justify-center gap-1.5">
+                        <ImagePlus size={13} /> Add Gallery Images
+                      </button>
+                      {productForm.gallery_images.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {productForm.gallery_images.map((img, i) => (
+                            <div key={i} className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-[var(--dark-border)] group">
+                              <img src={img} alt="" className="w-full h-full object-cover" />
+                              <button onClick={() => setProductForm(p => ({ ...p, gallery_images: p.gallery_images.filter((_, idx) => idx !== i) }))}
+                                className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <X size={14} className="text-white" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tags & Status */}
+                <div className="rounded-xl border border-slate-200 dark:border-[var(--dark-border)] p-4">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-3 flex items-center gap-1.5"><Tag size={12} /> Tags & Status</p>
+                  <div className="space-y-3">
+                    <div><label className="triumph-label">Tags (comma-separated)</label><input className="triumph-input" value={productForm.tags} onChange={e => setProductForm(p => ({ ...p, tags: e.target.value }))} placeholder="premium, cotton, sport" /></div>
+                    <div className="flex items-center gap-6 pt-2">
+                      <Toggle value={productForm.is_active} onChange={() => setProductForm(p => ({ ...p, is_active: !p.is_active }))} label={productForm.is_active ? 'Active' : 'Inactive'} />
+                      <Toggle value={productForm.is_featured} onChange={() => setProductForm(p => ({ ...p, is_featured: !p.is_featured }))} label={productForm.is_featured ? 'Featured' : 'Not Featured'} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SEO */}
+              <div className="rounded-xl border border-slate-200 dark:border-[var(--dark-border)] p-4">
+                <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-3 flex items-center gap-1.5"><Search size={12} /> SEO</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div><label className="triumph-label">Meta Title</label><input className="triumph-input" value={productForm.meta_title} onChange={e => setProductForm(p => ({ ...p, meta_title: e.target.value }))} placeholder="Product | Triumph Socks" /></div>
+                  <div className="sm:col-span-2"><label className="triumph-label">Meta Description</label><textarea className="triumph-input resize-none" rows={2} value={productForm.meta_description} onChange={e => setProductForm(p => ({ ...p, meta_description: e.target.value }))} placeholder="Product meta description for search…" /></div>
+                </div>
+                {/* SEO Preview */}
+                <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-[var(--dark-surface)] border border-slate-100 dark:border-[var(--dark-border)]">
+                  <p className="text-[0.6rem] text-slate-400 uppercase tracking-wider mb-1">Search Preview</p>
+                  <p className="text-xs font-medium text-blue-600 dark:text-blue-400 truncate">{productForm.meta_title || productForm.name || 'Product Title'}</p>
+                  <p className="text-[0.6rem] text-green-600 dark:text-green-400">triumph-socks.com/products/{productForm.name ? productForm.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') : 'product-slug'}</p>
+                  <p className="text-[0.6rem] text-slate-500 dark:text-[var(--dark-text-3)] line-clamp-2 mt-0.5">{productForm.meta_description || productForm.short_description || 'No description set'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* Specifications */}
+                <div className="rounded-xl border border-slate-200 dark:border-[var(--dark-border)] p-4">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-3 flex items-center gap-1.5"><FileText size={12} /> Specifications</p>
+                  <div className="space-y-1.5">
+                    {productForm.specifications.map((spec, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input className="triumph-input flex-1 text-xs" placeholder="Key (e.g. Material)" value={spec.key}
+                          onChange={e => { const s = [...productForm.specifications]; s[i] = { ...s[i], key: e.target.value }; setProductForm(p => ({ ...p, specifications: s })); }} />
+                        <input className="triumph-input flex-1 text-xs" placeholder="Value (e.g. 100% Cotton)" value={spec.value}
+                          onChange={e => { const s = [...productForm.specifications]; s[i] = { ...s[i], value: e.target.value }; setProductForm(p => ({ ...p, specifications: s })); }} />
+                        <button onClick={() => setProductForm(p => ({ ...p, specifications: p.specifications.filter((_, idx) => idx !== i) }))}
+                          className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"><X size={13} /></button>
                       </div>
                     ))}
+                    <button onClick={() => setProductForm(p => ({ ...p, specifications: [...p.specifications, { key: '', value: '' }] }))}
+                      className="w-full py-1.5 rounded-lg border border-dashed border-slate-200 dark:border-[var(--dark-border)] text-xs text-slate-400 hover:text-amber-600 hover:border-amber-300 transition-colors flex items-center justify-center gap-1">
+                      <Plus size={12} /> Add Specification
+                    </button>
                   </div>
-                )}
+                </div>
+
+                {/* Variants */}
+                <div className="rounded-xl border border-slate-200 dark:border-[var(--dark-border)] p-4">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-3 flex items-center gap-1.5"><Layers size={12} /> Variants</p>
+                  <div className="space-y-1.5">
+                    {productForm.variants.map((v, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input className="triumph-input flex-1 text-xs" placeholder="Variant Name" value={v.name}
+                          onChange={e => { const vs = [...productForm.variants]; vs[i] = { ...vs[i], name: e.target.value }; setProductForm(p => ({ ...p, variants: vs })); }} />
+                        <input className="triumph-input w-28 text-xs font-mono" placeholder="SKU" value={v.sku}
+                          onChange={e => { const vs = [...productForm.variants]; vs[i] = { ...vs[i], sku: e.target.value }; setProductForm(p => ({ ...p, variants: vs })); }} />
+                        <input type="number" className="triumph-input w-24 text-xs" placeholder="Price" value={v.price || ''}
+                          onChange={e => { const vs = [...productForm.variants]; vs[i] = { ...vs[i], price: parseFloat(e.target.value) || 0 }; setProductForm(p => ({ ...p, variants: vs })); }} />
+                        <button onClick={() => setProductForm(p => ({ ...p, variants: p.variants.filter((_, idx) => idx !== i) }))}
+                          className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"><X size={13} /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => setProductForm(p => ({ ...p, variants: [...p.variants, { name: '', sku: '', price: 0 }] }))}
+                      className="w-full py-1.5 rounded-lg border border-dashed border-slate-200 dark:border-[var(--dark-border)] text-xs text-slate-400 hover:text-amber-600 hover:border-amber-300 transition-colors flex items-center justify-center gap-1">
+                      <Plus size={12} /> Add Variant
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom save bar (mobile convenience) */}
+              <div className="flex justify-end gap-2 pt-4 pb-2 border-t border-slate-200 dark:border-[var(--dark-border)] lg:hidden">
+                <Button variant="secondary" size="sm" onClick={() => setProductModalOpen(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleSaveProduct} loading={saving} icon={<Save size={12} />}>
+                  {editProduct ? 'Save Product' : 'Create Product'}
+                </Button>
               </div>
             </div>
           </div>
-
-          {/* Tags & Status */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-2 flex items-center gap-1.5"><Tag size={12} /> Tags & Status</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div><label className="triumph-label">Tags (comma-separated)</label><input className="triumph-input" value={productForm.tags} onChange={e => setProductForm(p => ({ ...p, tags: e.target.value }))} placeholder="premium, cotton, sport" /></div>
-              <div className="flex items-center gap-6 pt-5">
-                <Toggle value={productForm.is_active} onChange={() => setProductForm(p => ({ ...p, is_active: !p.is_active }))} label={productForm.is_active ? 'Active' : 'Inactive'} />
-                <Toggle value={productForm.is_featured} onChange={() => setProductForm(p => ({ ...p, is_featured: !p.is_featured }))} label={productForm.is_featured ? 'Featured' : 'Not Featured'} />
-              </div>
-            </div>
-          </div>
-
-          {/* SEO */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-2 flex items-center gap-1.5"><Search size={12} /> SEO</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div><label className="triumph-label">Meta Title</label><input className="triumph-input" value={productForm.meta_title} onChange={e => setProductForm(p => ({ ...p, meta_title: e.target.value }))} placeholder="Product | Triumph Socks" /></div>
-              <div className="sm:col-span-2"><label className="triumph-label">Meta Description</label><textarea className="triumph-input resize-none" rows={2} value={productForm.meta_description} onChange={e => setProductForm(p => ({ ...p, meta_description: e.target.value }))} placeholder="Product meta description for search…" /></div>
-            </div>
-            {/* SEO Preview */}
-            <div className="mt-2 p-3 rounded-lg bg-slate-50 dark:bg-[var(--dark-surface)] border border-slate-100 dark:border-[var(--dark-border)]">
-              <p className="text-[0.6rem] text-slate-400 uppercase tracking-wider mb-1">Search Preview</p>
-              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 truncate">{productForm.meta_title || productForm.name || 'Product Title'}</p>
-              <p className="text-[0.6rem] text-green-600 dark:text-green-400">triumph-socks.com/products/{productForm.name ? productForm.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') : 'product-slug'}</p>
-              <p className="text-[0.6rem] text-slate-500 dark:text-[var(--dark-text-3)] line-clamp-2 mt-0.5">{productForm.meta_description || productForm.short_description || 'No description set'}</p>
-            </div>
-          </div>
-
-          {/* Specifications */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-2 flex items-center gap-1.5"><FileText size={12} /> Specifications</p>
-            <div className="space-y-1.5">
-              {productForm.specifications.map((spec, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input className="triumph-input flex-1 text-xs" placeholder="Key (e.g. Material)" value={spec.key}
-                    onChange={e => { const s = [...productForm.specifications]; s[i] = { ...s[i], key: e.target.value }; setProductForm(p => ({ ...p, specifications: s })); }} />
-                  <input className="triumph-input flex-1 text-xs" placeholder="Value (e.g. 100% Cotton)" value={spec.value}
-                    onChange={e => { const s = [...productForm.specifications]; s[i] = { ...s[i], value: e.target.value }; setProductForm(p => ({ ...p, specifications: s })); }} />
-                  <button onClick={() => setProductForm(p => ({ ...p, specifications: p.specifications.filter((_, idx) => idx !== i) }))}
-                    className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"><X size={13} /></button>
-                </div>
-              ))}
-              <button onClick={() => setProductForm(p => ({ ...p, specifications: [...p.specifications, { key: '', value: '' }] }))}
-                className="w-full py-1.5 rounded-lg border border-dashed border-slate-200 dark:border-[var(--dark-border)] text-xs text-slate-400 hover:text-amber-600 hover:border-amber-300 transition-colors flex items-center justify-center gap-1">
-                <Plus size={12} /> Add Specification
-              </button>
-            </div>
-          </div>
-
-          {/* Variants */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 dark:text-[var(--dark-text)] mb-2 flex items-center gap-1.5"><Layers size={12} /> Variants</p>
-            <div className="space-y-1.5">
-              {productForm.variants.map((v, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input className="triumph-input flex-1 text-xs" placeholder="Variant Name" value={v.name}
-                    onChange={e => { const vs = [...productForm.variants]; vs[i] = { ...vs[i], name: e.target.value }; setProductForm(p => ({ ...p, variants: vs })); }} />
-                  <input className="triumph-input w-28 text-xs font-mono" placeholder="SKU" value={v.sku}
-                    onChange={e => { const vs = [...productForm.variants]; vs[i] = { ...vs[i], sku: e.target.value }; setProductForm(p => ({ ...p, variants: vs })); }} />
-                  <input type="number" className="triumph-input w-24 text-xs" placeholder="Price" value={v.price || ''}
-                    onChange={e => { const vs = [...productForm.variants]; vs[i] = { ...vs[i], price: parseFloat(e.target.value) || 0 }; setProductForm(p => ({ ...p, variants: vs })); }} />
-                  <button onClick={() => setProductForm(p => ({ ...p, variants: p.variants.filter((_, idx) => idx !== i) }))}
-                    className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"><X size={13} /></button>
-                </div>
-              ))}
-              <button onClick={() => setProductForm(p => ({ ...p, variants: [...p.variants, { name: '', sku: '', price: 0 }] }))}
-                className="w-full py-1.5 rounded-lg border border-dashed border-slate-200 dark:border-[var(--dark-border)] text-xs text-slate-400 hover:text-amber-600 hover:border-amber-300 transition-colors flex items-center justify-center gap-1">
-                <Plus size={12} /> Add Variant
-              </button>
-            </div>
-          </div>
         </div>
-
-        <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-slate-100 dark:border-[var(--dark-border)]">
-          <Button variant="secondary" size="sm" onClick={() => setProductModalOpen(false)}>Cancel</Button>
-          {editProduct && (
-            <Button variant="ghost" size="sm" icon={<History size={12} />} onClick={() => openRevisions('product', editProduct.id, editProduct.name)}>History</Button>
-          )}
-          <Button size="sm" onClick={handleSaveProduct} loading={saving} icon={<Save size={12} />}>{editProduct ? 'Save Product' : 'Create Product'}</Button>
-        </div>
-      </Modal>
+      )}
 
       {/* ═══════════ Page SEO Modal ═══════════ */}
       <Modal open={pageModalOpen} onClose={() => setPageModalOpen(false)} title={editPage ? 'Edit Page SEO' : 'New Page'} size="lg">

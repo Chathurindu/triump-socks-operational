@@ -1,7 +1,8 @@
 'use client';
 import { usePathname } from 'next/navigation';
-import { Bell, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { NotificationCenter } from '@/components/layout/NotificationCenter';
 
 const routeLabels: Record<string, string> = {
   '/dashboard':           'Dashboard',
@@ -59,10 +60,7 @@ export default function MobileHeader() {
         >
           {dark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-        <button className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[var(--dark-text-2)] dark:hover:bg-[var(--dark-surface)] transition-colors relative">
-          <Bell size={16} />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-amber-500 rounded-full" />
-        </button>
+        <NotificationCenter />
       </div>
     </header>
   );

@@ -9,6 +9,8 @@ const SORT_MAP: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   if (searchParams.get('meta') === '1') {
@@ -29,7 +31,10 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 'lr.created_at';
 
   try {
-    const statusF = status ? `AND lr.status = '${status.replace(/'/g, "''")}'` : '';
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
+    let statusF = '';
+    if (status) { statusF = `AND lr.status = $${idx}`; params.push(status); idx++; }
     const whereBase = `
       FROM leave_requests lr
       JOIN employees e ON e.id = lr.employee_id
@@ -39,8 +44,8 @@ export async function GET(req: NextRequest) {
       ${statusF}
     `;
     const [res, countRes, summaryRes] = await Promise.all([
-      db.query(`SELECT lr.*, e.full_name AS employee_name, e.emp_code, lt.name AS leave_type_name, lt.days_allowed, approver.full_name AS approved_by_name ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $2 OFFSET $3`, [`%${search}%`, limit, offset]),
-      db.query(`SELECT COUNT(*) ${whereBase}`, [`%${search}%`]),
+      db.query(`SELECT lr.*, e.full_name AS employee_name, e.emp_code, lt.name AS leave_type_name, lt.days_allowed, approver.full_name AS approved_by_name ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $${idx} OFFSET $${idx + 1}`, [...params, limit, offset]),
+      db.query(`SELECT COUNT(*) ${whereBase}`, params),
       db.query(`
         SELECT COUNT(*)::int AS total,
           COUNT(*) FILTER (WHERE status='pending')::int AS pending,

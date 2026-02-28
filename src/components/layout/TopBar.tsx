@@ -1,6 +1,7 @@
 'use client';
-import { Bell, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { NotificationCenter } from '@/components/layout/NotificationCenter';
 import { usePathname } from 'next/navigation';
 
 const pageTitles: Record<string, string> = {
@@ -45,10 +46,7 @@ export function TopBar() {
         </div>
 
         {/* Notifications */}
-        <button className="relative w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
-          <Bell size={15} />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full border border-white dark:border-gray-900" />
-        </button>
+        <NotificationCenter />
 
         <ThemeToggle />
       </div>

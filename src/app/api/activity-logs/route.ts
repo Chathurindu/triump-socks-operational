@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSession } from '@/lib/auth-utils';
+import { getSession, requireRole } from '@/lib/auth-utils';
 
 /* ── Helper: log an activity ── */
 export async function logActivity(opts: {
@@ -47,6 +47,8 @@ const SORT_MAP: Record<string, string> = {
 
 /* ═══════════════════════ GET ═══════════════════════ */
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('admin');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   /* Meta — distinct modules & actions for filters */
@@ -75,12 +77,14 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 'created_at';
 
   try {
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
     const filters: string[] = [];
-    if (module) filters.push(`AND module = '${module.replace(/'/g, "''")}'`);
-    if (action) filters.push(`AND action = '${action.replace(/'/g, "''")}'`);
-    if (userId) filters.push(`AND user_id = '${userId.replace(/'/g, "''")}'`);
-    if (from)   filters.push(`AND created_at >= '${from}'::timestamptz`);
-    if (to)     filters.push(`AND created_at <= '${to}'::timestamptz + interval '1 day'`);
+    if (module) { filters.push(`AND module = $${idx}`); params.push(module); idx++; }
+    if (action) { filters.push(`AND action = $${idx}`); params.push(action); idx++; }
+    if (userId) { filters.push(`AND user_id = $${idx}`); params.push(userId); idx++; }
+    if (from)   { filters.push(`AND created_at >= $${idx}::timestamptz`); params.push(from); idx++; }
+    if (to)     { filters.push(`AND created_at <= $${idx}::timestamptz + interval '1 day'`); params.push(to); idx++; }
 
     const whereBase = `
       FROM activity_logs
@@ -89,8 +93,8 @@ export async function GET(req: NextRequest) {
     `;
 
     const [res, countRes, summaryRes] = await Promise.all([
-      db.query(`SELECT * ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $2 OFFSET $3`, [`%${search}%`, limit, offset]),
-      db.query(`SELECT COUNT(*) ${whereBase}`, [`%${search}%`]),
+      db.query(`SELECT * ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $${idx} OFFSET $${idx + 1}`, [...params, limit, offset]),
+      db.query(`SELECT COUNT(*) ${whereBase}`, params),
       db.query(`
         SELECT
           COUNT(*)::int AS total,

@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -24,11 +25,14 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!open || !mounted) return null;
 
   const maxW = size === 'sm' ? 'max-w-sm' : size === 'full' ? 'max-w-6xl' : size === 'xl' ? 'max-w-4xl' : size === 'lg' ? 'max-w-2xl' : 'max-w-lg';
 
-  return (
+  return createPortal(
     <div
       className="modal-overlay"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -47,6 +51,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
         {/* Body */}
         <div className="px-5 py-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

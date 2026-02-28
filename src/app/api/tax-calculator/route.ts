@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireRole } from '@/lib/auth-utils';
 
 /**
  * Company Tax Calculator API
@@ -120,6 +121,8 @@ const SORT_MAP: Record<string, string> = {
 
 /* ═══════════════════════════════════════════ GET ═══════════════════════════════════════════ */
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   /* ── Return tax config ── */
@@ -150,7 +153,10 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 'created_at';
 
   try {
-    const statusF = status ? `AND status = '${status.replace(/'/g, "''")}'` : '';
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
+    let statusF = '';
+    if (status) { statusF = `AND status = $${idx}`; params.push(status); idx++; }
     const whereBase = `
       FROM company_tax_records
       WHERE (assessment_year ILIKE $1 OR period_label ILIKE $1 OR notes ILIKE $1 OR status ILIKE $1)
@@ -159,10 +165,10 @@ export async function GET(req: NextRequest) {
 
     const [res, countRes, summaryRes] = await Promise.all([
       db.query(
-        `SELECT * ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $2 OFFSET $3`,
-        [`%${search}%`, limit, offset],
+        `SELECT * ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $${idx} OFFSET $${idx + 1}`,
+        [...params, limit, offset],
       ),
-      db.query(`SELECT COUNT(*) ${whereBase}`, [`%${search}%`]),
+      db.query(`SELECT COUNT(*) ${whereBase}`, params),
       db.query(`
         SELECT
           COUNT(*)::int                                  AS total_records,
@@ -188,6 +194,8 @@ export async function GET(req: NextRequest) {
 
 /* ═══════════════════════════════════════════ POST ═══════════════════════════════════════════ */
 export async function POST(req: NextRequest) {
+  const authErr = await requireRole('manager');
+  if (authErr) return authErr;
   try {
     const body = await req.json();
     const res = await db.query(
@@ -255,6 +263,8 @@ export async function POST(req: NextRequest) {
 
 /* ═══════════════════════════════════════════ PATCH ═══════════════════════════════════════════ */
 export async function PATCH(req: NextRequest) {
+  const authErr = await requireRole('manager');
+  if (authErr) return authErr;
   try {
     const body = await req.json();
     if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -288,6 +298,8 @@ export async function PATCH(req: NextRequest) {
 
 /* ═══════════════════════════════════════════ DELETE ═══════════════════════════════════════════ */
 export async function DELETE(req: NextRequest) {
+  const authErr = await requireRole('admin');
+  if (authErr) return authErr;
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

@@ -11,6 +11,8 @@ const SORT_MAP: Record<string, string> = {
 
 /* ═══════════════════════ GET ═══════════════════════ */
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('admin');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   /* Meta: roles, groups, employees for linking */

@@ -9,6 +9,8 @@ const SORT_MAP: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
 
   if (searchParams.get('meta') === '1') {
@@ -26,14 +28,17 @@ export async function GET(req: NextRequest) {
   const orderCol = SORT_MAP[sortKey] ?? 'po.created_at';
 
   try {
-    const statusF = status ? `AND po.status = '${status.replace(/'/g, "''")}'` : '';
+    const params: any[] = [`%${search}%`];
+    let idx = 2;
+    let statusF = '';
+    if (status) { statusF = `AND po.status = $${idx}`; params.push(status); idx++; }
     const whereBase = `
       FROM purchase_orders po
       LEFT JOIN suppliers s ON s.id = po.supplier_id
       WHERE (po.po_number ILIKE $1 OR s.name ILIKE $1)
       ${statusF}
     `;
-    const dataQ = `SELECT po.*, s.name AS supplier_name, s.category AS supplier_category ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $2 OFFSET $3`;
+    const dataQ = `SELECT po.*, s.name AS supplier_name, s.category AS supplier_category ${whereBase} ORDER BY ${orderCol} ${sortDir} LIMIT $${idx} OFFSET $${idx + 1}`;
     const countQ = `SELECT COUNT(*) ${whereBase}`;
     const summaryQ = `
       SELECT COUNT(*)::int AS total,
@@ -44,8 +49,8 @@ export async function GET(req: NextRequest) {
       FROM purchase_orders
     `;
     const [res, countRes, summaryRes] = await Promise.all([
-      db.query(dataQ, [`%${search}%`, limit, offset]),
-      db.query(countQ, [`%${search}%`]),
+      db.query(dataQ, [...params, limit, offset]),
+      db.query(countQ, params),
       db.query(summaryQ),
     ]);
     return NextResponse.json({ data: res.rows, total: parseInt(countRes.rows[0].count), summary: summaryRes.rows[0] });

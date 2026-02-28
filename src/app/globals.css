@@ -383,7 +383,7 @@ a:not([class]) { color: inherit; }
 .anim-d6 { animation-delay: 0.30s; }
 
 /* â”€â”€â”€ Page content â”€â”€â”€â”€â”€â”€ */
-.page-content { animation: triumph-fade-up 0.42s cubic-bezier(0.16,1,0.3,1) both; }
+.page-content { animation: triumph-fade-in 0.35s cubic-bezier(0.16,1,0.3,1) both; }
 
 /* â”€â”€â”€ Misc â”€â”€â”€â”€â”€â”€ */
 a, button { -webkit-tap-highlight-color: transparent; }
@@ -411,4 +411,10 @@ a, button { -webkit-tap-highlight-color: transparent; }
 @keyframes toast-progress {
   from { width: 100%; }
   to   { width: 0%; }
+}
+
+/* ─── CMS Panel slide-down ───── */
+@keyframes cms-panel-slide-down {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

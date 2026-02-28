@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireRole } from '@/lib/auth-utils';
 
 export async function GET() {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   try {
     const [monthly, productSales, categoryRev, expBreakdown, hrData, productionTrend] = await Promise.all([
       // Monthly revenue vs expense (12 months)

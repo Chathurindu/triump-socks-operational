@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireRole } from '@/lib/auth-utils';
 
 /* ────────────────────── GET ────────────────────── */
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const sp = req.nextUrl.searchParams;
 
   /* meta endpoint — products, machines, employees for form dropdowns */
@@ -100,6 +103,8 @@ export async function GET(req: NextRequest) {
 
 /* ────────────────────── POST ────────────────────── */
 export async function POST(req: NextRequest) {
+  const authErr = await requireRole('staff');
+  if (authErr) return authErr;
   try {
     const b = await req.json();
     const countRes = await db.query(`SELECT COUNT(*)::int FROM production_orders`);
@@ -130,6 +135,8 @@ export async function POST(req: NextRequest) {
 
 /* ────────────────────── PATCH ────────────────────── */
 export async function PATCH(req: NextRequest) {
+  const authErr = await requireRole('staff');
+  if (authErr) return authErr;
   try {
     const b = await req.json();
     if (!b.id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
@@ -169,6 +176,8 @@ export async function PATCH(req: NextRequest) {
 
 /* ────────────────────── DELETE ────────────────────── */
 export async function DELETE(req: NextRequest) {
+  const authErr = await requireRole('manager');
+  if (authErr) return authErr;
   const id = req.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 

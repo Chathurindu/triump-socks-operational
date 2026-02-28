@@ -10,10 +10,22 @@ import { v4 as uuidv4 } from 'uuid';
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'media');
 const THUMB_DIR  = path.join(process.cwd(), 'public', 'uploads', 'thumbnails');
 const MAX_SIZE   = 10 * 1024 * 1024; // 10 MB
-const ALLOWED    = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'application/pdf'];
+const ALLOWED    = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+// Removed image/svg+xml — SVG files can contain embedded JavaScript (XSS vector)
+
+/* Map of allowed MIME types to valid extensions (prevents extension spoofing) */
+const MIME_EXT: Record<string, string[]> = {
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+  'image/gif': ['.gif'],
+  'application/pdf': ['.pdf'],
+};
 
 /* ═══════════════════════ GET — list media ═══════════════════════ */
 export async function GET(req: NextRequest) {
+  const authErr = await requireRole('viewer');
+  if (authErr) return authErr;
   const { searchParams } = new URL(req.url);
   const folder  = searchParams.get('folder') ?? '';
   const search  = searchParams.get('search') ?? '';
@@ -70,13 +82,27 @@ export async function POST(req: NextRequest) {
     if (file.size > MAX_SIZE) return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 400 });
     if (!ALLOWED.includes(file.type)) return NextResponse.json({ error: `File type ${file.type} not allowed` }, { status: 400 });
 
+    // Validate extension matches MIME type (prevent extension spoofing)
+    const origExt = path.extname(file.name).toLowerCase();
+    const allowedExts = MIME_EXT[file.type];
+    if (!allowedExts || !allowedExts.includes(origExt)) {
+      // Use canonical extension for the MIME type instead of trusting client
+      const ext = allowedExts ? allowedExts[0] : '.bin';
+      // Will use this ext below
+      var safeExt = ext;
+    } else {
+      var safeExt = origExt;
+    }
+
+    // Sanitize folder name to prevent path traversal
+    const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
+
     // Ensure dirs exist
     if (!existsSync(UPLOAD_DIR)) await mkdir(UPLOAD_DIR, { recursive: true });
     if (!existsSync(THUMB_DIR)) await mkdir(THUMB_DIR, { recursive: true });
 
-    const ext = path.extname(file.name) || '.jpg';
     const id = uuidv4();
-    const filename = `${id}${ext}`;
+    const filename = `${id}${safeExt}`;
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // Write original
@@ -98,8 +124,8 @@ export async function POST(req: NextRequest) {
         await sharp(buffer)
           .resize(300, 300, { fit: 'cover', withoutEnlargement: true })
           .jpeg({ quality: 80 })
-          .toFile(path.join(THUMB_DIR, thumbName.replace(ext, '.jpg')));
-        thumbnailUrl = `/uploads/thumbnails/${thumbName.replace(ext, '.jpg')}`;
+          .toFile(path.join(THUMB_DIR, thumbName.replace(safeExt, '.jpg')));
+        thumbnailUrl = `/uploads/thumbnails/${thumbName.replace(safeExt, '.jpg')}`;
       } catch (e) {
         // Thumbnail generation failed — non-critical
         console.warn('Thumbnail generation failed:', e);
@@ -111,7 +137,7 @@ export async function POST(req: NextRequest) {
     const res = await db.query(
       `INSERT INTO cms_media (id, filename, original_name, mime_type, file_size, width, height, url, thumbnail_url, alt_text, caption, folder, uploaded_by)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
-      [id, filename, file.name, file.type, file.size, width, height, url, thumbnailUrl || null, altText || null, caption || null, folder, null]
+      [id, filename, file.name, file.type, file.size, width, height, url, thumbnailUrl || null, altText || null, caption || null, safeFolder, null]
     );
 
     const session = await getSession();
