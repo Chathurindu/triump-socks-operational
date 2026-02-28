@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Package, Factory, Users, DollarSign,
   BarChart3, Settings, ShoppingCart, Truck, Wrench,
   ChevronDown, CircleUserRound, LogOut, Landmark,
+  Shield, Globe, Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { signOut, useSession } from 'next-auth/react';
@@ -39,6 +40,13 @@ const navItems = [
   { href: '/finance',   label: 'Finance',   icon: DollarSign },
   { href: '/finance/tax-calculator', label: 'Tax Calculator', icon: Landmark },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  {
+    label: 'Administration', icon: Shield, children: [
+      { href: '/admin/users',    label: 'User Management', icon: Users },
+      { href: '/admin/cms',      label: 'Website CMS',     icon: Globe },
+      { href: '/admin/activity', label: 'Activity Logs',   icon: Activity },
+    ],
+  },
   { href: '/settings',  label: 'Settings',  icon: Settings },
 ];
 
