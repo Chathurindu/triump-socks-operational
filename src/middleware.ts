@@ -98,6 +98,6 @@ export const config = {
      * Match all paths except static assets and Next.js internals.
      * This ensures every route goes through auth checking.
      */
-    '/((?!_next/static|_next/image|favicon.ico|uploads/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|favicon-|apple-touch-icon|android-chrome|site.webmanifest|logo.jpeg|uploads/).*)',
   ],
 };

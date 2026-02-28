@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 
 const NAV = [
@@ -18,7 +19,7 @@ export default function PublicNavbar() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="w-9 h-9 rounded-lg bg-amber-600 flex items-center justify-center text-white font-bold text-sm">TS</span>
+          <Image src="/logo.jpeg" alt="Triumph Socks" width={36} height={36} className="rounded-lg" />
           <span className="font-bold text-gray-800 dark:text-white text-lg">Triumph Socks</span>
         </Link>
 

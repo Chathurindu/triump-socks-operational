@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getAllSettings, getServices } from '@/lib/cms';
 
 export default async function PublicFooter() {
@@ -25,7 +26,7 @@ export default async function PublicFooter() {
         {/* Brand — from CMS settings */}
         <div className="col-span-1 md:col-span-2">
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-9 h-9 rounded-lg bg-amber-600 flex items-center justify-center text-white font-bold text-sm">TS</span>
+            <Image src="/logo.jpeg" alt="Triumph Socks" width={36} height={36} className="rounded-lg" />
             <span className="font-bold text-white text-lg">{siteName}</span>
           </div>
           <p className="text-sm leading-relaxed text-gray-300 max-w-sm">

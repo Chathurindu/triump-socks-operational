@@ -3,6 +3,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function LoginPage() {
@@ -59,9 +60,7 @@ export default function LoginPage() {
         }} />
         <div className="relative">
           <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center">
-              <span className="text-white font-black text-sm">TS</span>
-            </div>
+            <Image src="/logo.jpeg" alt="Triumph Socks" width={40} height={40} className="rounded-xl" />
             <div>
               <p className="text-white font-black text-lg leading-tight">Triumph Socks</p>
               <p className="text-gray-400 text-xs">Enterprise Management System</p>

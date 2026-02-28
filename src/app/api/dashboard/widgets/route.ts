@@ -4,21 +4,21 @@ import { requireRole, getSession } from '@/lib/auth-utils';
 
 /* Default widget layout if user has none saved */
 const DEFAULT_WIDGETS = [
-  { id: 'revenue',     label: 'Revenue (This Month)',   type: 'stat',  enabled: true, order: 0, size: 1 },
-  { id: 'expenses',    label: 'Expenses (This Month)',  type: 'stat',  enabled: true, order: 1, size: 1 },
-  { id: 'net-profit',  label: 'Net Profit',             type: 'stat',  enabled: true, order: 2, size: 1 },
-  { id: 'employees',   label: 'Active Employees',       type: 'stat',  enabled: true, order: 3, size: 1 },
-  { id: 'orders',      label: 'Active Sales Orders',    type: 'stat',  enabled: false, order: 4, size: 1 },
-  { id: 'low-stock',   label: 'Low Stock Alerts',       type: 'stat',  enabled: false, order: 5, size: 1 },
-  { id: 'production',  label: 'In Production',          type: 'stat',  enabled: false, order: 6, size: 1 },
-  { id: 'total-emp',   label: 'Total Employees',        type: 'stat',  enabled: false, order: 7, size: 1 },
-  { id: 'rev-chart',   label: 'Revenue vs Expense',     type: 'chart', enabled: true, order: 8, size: 2 },
-  { id: 'pie-chart',   label: 'Revenue by Product',     type: 'chart', enabled: true, order: 9, size: 1 },
-  { id: 'bar-chart',   label: 'Top Products',           type: 'mixed', enabled: true, order: 10, size: 1 },
-  { id: 'recent-txn',  label: 'Recent Transactions',    type: 'mixed', enabled: true, order: 11, size: 1 },
-  { id: 'overdue-inv', label: 'Overdue Invoices',       type: 'mixed', enabled: true, order: 12, size: 1 },
-  { id: 'recent-exp',  label: 'Recent Expenses',        type: 'list',  enabled: true, order: 13, size: 1 },
-  { id: 'quotes',      label: 'Pending Quotations',     type: 'list',  enabled: true, order: 14, size: 1 },
+  { id: 'revenue',     label: 'Revenue',              type: 'stat',  enabled: true,  x: 0,  y: 0,  w: 3, h: 2 },
+  { id: 'expenses',    label: 'Expenses',             type: 'stat',  enabled: true,  x: 3,  y: 0,  w: 3, h: 2 },
+  { id: 'net-profit',  label: 'Net Profit',           type: 'stat',  enabled: true,  x: 6,  y: 0,  w: 3, h: 2 },
+  { id: 'employees',   label: 'Active Employees',     type: 'stat',  enabled: true,  x: 9,  y: 0,  w: 3, h: 2 },
+  { id: 'orders',      label: 'Active Sales Orders',  type: 'stat',  enabled: false, x: 0,  y: 0,  w: 3, h: 2 },
+  { id: 'low-stock',   label: 'Low Stock Alerts',     type: 'stat',  enabled: false, x: 3,  y: 0,  w: 3, h: 2 },
+  { id: 'production',  label: 'In Production',        type: 'stat',  enabled: false, x: 6,  y: 0,  w: 3, h: 2 },
+  { id: 'total-emp',   label: 'Total Employees',      type: 'stat',  enabled: false, x: 9,  y: 0,  w: 3, h: 2 },
+  { id: 'rev-chart',   label: 'Revenue vs Expense',   type: 'chart', enabled: true,  x: 0,  y: 2,  w: 8, h: 4 },
+  { id: 'pie-chart',   label: 'Revenue by Product',   type: 'chart', enabled: true,  x: 8,  y: 2,  w: 4, h: 4 },
+  { id: 'bar-chart',   label: 'Top Products',         type: 'mixed', enabled: true,  x: 0,  y: 6,  w: 4, h: 4 },
+  { id: 'recent-txn',  label: 'Recent Transactions',  type: 'mixed', enabled: true,  x: 4,  y: 6,  w: 4, h: 4 },
+  { id: 'overdue-inv', label: 'Overdue Invoices',     type: 'mixed', enabled: true,  x: 8,  y: 6,  w: 4, h: 4 },
+  { id: 'recent-exp',  label: 'Recent Expenses',      type: 'list',  enabled: true,  x: 0,  y: 10, w: 6, h: 4 },
+  { id: 'quotes',      label: 'Pending Quotations',   type: 'list',  enabled: true,  x: 6,  y: 10, w: 6, h: 4 },
 ];
 
 export async function GET(req: NextRequest) {

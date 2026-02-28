@@ -1,5 +1,6 @@
 'use client';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NotificationCenter } from '@/components/layout/NotificationCenter';
@@ -44,9 +45,7 @@ export default function MobileHeader() {
     <header className="mobile-header md:hidden">
       {/* Logo + title */}
       <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
-          <span className="text-white font-bold text-xs">T</span>
-        </div>
+        <Image src="/logo.jpeg" alt="Triumph Socks" width={28} height={28} className="rounded-lg shadow-sm" />
         <span className="font-semibold text-sm text-slate-800 dark:text-[var(--dark-text)]">
           {label}
         </span>

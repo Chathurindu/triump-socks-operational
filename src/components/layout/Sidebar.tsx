@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Package, Factory, Users, DollarSign,
@@ -116,9 +117,7 @@ export function Sidebar() {
         {/* Logo */}
         <div className="px-4 py-3.5 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-600 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-xs">TS</span>
-            </div>
+            <Image src="/logo.jpeg" alt="Triumph Socks" width={28} height={28} className="rounded-lg flex-shrink-0" />
             <div>
               <p className="text-white font-bold text-sm leading-tight">Triumph Socks</p>
               <p className="text-gray-400 text-[0.62rem]">Operations</p>
