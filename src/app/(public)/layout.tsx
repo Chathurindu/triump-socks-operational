@@ -3,6 +3,8 @@ import PublicNavbar from '@/components/public/PublicNavbar';
 import PublicFooter from '@/components/public/PublicFooter';
 import { getSettings } from '@/lib/cms';
 
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings(['seo_default_title', 'seo_default_description', 'seo_og_image', 'site_name']);
   return {

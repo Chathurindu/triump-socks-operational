@@ -36,7 +36,7 @@ export default function PublicNavbar() {
         </div>
 
         {/* Mobile toggle */}
-        <button onClick={() => setOpen(!open)} className="md:hidden p-2 text-gray-600 dark:text-gray-300">
+        <button onClick={() => setOpen(!open)} className="md:hidden p-2 text-gray-600 dark:text-gray-300" aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}>
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>

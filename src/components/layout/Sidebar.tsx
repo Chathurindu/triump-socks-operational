@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Package, Factory, Users, DollarSign,
   BarChart3, Settings, ShoppingCart, Truck, Wrench,
   ChevronDown, CircleUserRound, LogOut, Landmark,
-  Shield, Globe, Activity,
+  Shield, Globe, Activity, FileText, Receipt, Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { signOut, useSession } from 'next-auth/react';
@@ -23,10 +23,12 @@ const navItems = [
   },
   {
     label: 'Trade', icon: ShoppingCart, children: [
-      { href: '/purchases', label: 'Purchases', icon: ShoppingCart },
-      { href: '/sales',     label: 'Sales',     icon: Truck },
-      { href: '/suppliers', label: 'Suppliers',  icon: CircleUserRound },
-      { href: '/customers', label: 'Customers',  icon: CircleUserRound },
+      { href: '/purchases',  label: 'Purchases',   icon: ShoppingCart },
+      { href: '/sales',      label: 'Sales',       icon: Truck },
+      { href: '/quotations', label: 'Quotations',  icon: FileText },
+      { href: '/invoices',   label: 'Invoices',    icon: Receipt },
+      { href: '/suppliers',  label: 'Suppliers',   icon: CircleUserRound },
+      { href: '/customers',  label: 'Customers',   icon: CircleUserRound },
     ],
   },
   {
@@ -37,8 +39,13 @@ const navItems = [
       { href: '/hr/leave',      label: 'Leave',      icon: Users },
     ],
   },
-  { href: '/finance',   label: 'Finance',   icon: DollarSign },
-  { href: '/finance/tax-calculator', label: 'Tax Calculator', icon: Landmark },
+  {
+    label: 'Finance', icon: DollarSign, children: [
+      { href: '/finance',              label: 'Transactions',   icon: DollarSign },
+      { href: '/expenses',             label: 'Expenses',       icon: Wallet },
+      { href: '/finance/tax-calculator', label: 'Tax Calculator', icon: Landmark },
+    ],
+  },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   {
     label: 'Administration', icon: Shield, children: [

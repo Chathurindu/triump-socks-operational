@@ -13,6 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+export const revalidate = 60; // ISR: regenerate every 60s
+
 export default async function HomePage() {
   const [
     { section: hero },
@@ -57,7 +59,7 @@ export default async function HomePage() {
           <div className="flex-1 hidden md:flex justify-center anim-scale-in anim-d3">
             {hero?.image_url ? (
               <div className="w-72 h-72 rounded-full overflow-hidden border-4 border-amber-600/30">
-                <Image src={hero.image_url} alt={hero.title || 'Triumph Socks'} width={288} height={288} className="object-cover w-full h-full" />
+                <Image src={hero.image_url} alt={hero.title || 'Triumph Socks'} width={288} height={288} priority fetchPriority="high" className="object-cover w-full h-full" />
               </div>
             ) : (
               <div className="w-72 h-72 rounded-full bg-amber-600/10 border border-amber-600/20 flex items-center justify-center hover:scale-105 transition-transform duration-500">

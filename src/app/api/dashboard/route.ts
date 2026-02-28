@@ -17,6 +17,9 @@ export async function GET() {
       monthlyRes,
       topProductsRes,
       recentTxnRes,
+      overdueInvRes,
+      recentExpRes,
+      pendingQuotesRes,
     ] = await Promise.all([
       db.query(`SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE txn_type='income' AND DATE_TRUNC('month', txn_date) = DATE_TRUNC('month', CURRENT_DATE)`),
       db.query(`SELECT COALESCE(SUM(amount),0) AS total FROM transactions WHERE txn_type='expense' AND DATE_TRUNC('month', txn_date) = DATE_TRUNC('month', CURRENT_DATE)`),
@@ -45,6 +48,23 @@ export async function GET() {
         FROM transactions t LEFT JOIN accounts a ON a.id = t.account_id
         ORDER BY t.created_at DESC LIMIT 8
       `),
+      db.query(`
+        SELECT i.id, i.invoice_number, i.due_date, i.grand_total, i.amount_paid, c.name AS customer_name
+        FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id
+        WHERE i.status IN ('unpaid','partial','overdue') AND i.due_date < CURRENT_DATE
+        ORDER BY i.due_date ASC LIMIT 8
+      `).catch(() => ({ rows: [] })),
+      db.query(`
+        SELECT e.id, e.expense_date, e.amount, e.description, ec.name AS category_name
+        FROM expenses e LEFT JOIN expense_categories ec ON ec.id=e.category_id
+        ORDER BY e.expense_date DESC LIMIT 8
+      `).catch(() => ({ rows: [] })),
+      db.query(`
+        SELECT q.id, q.quote_number, q.quote_date, q.grand_total, c.name AS customer_name
+        FROM quotations q LEFT JOIN customers c ON c.id=q.customer_id
+        WHERE q.status IN ('draft','sent')
+        ORDER BY q.created_at DESC LIMIT 8
+      `).catch(() => ({ rows: [] })),
     ]);
 
     return NextResponse.json({
@@ -67,6 +87,9 @@ export async function GET() {
         revenue:  parseFloat(r.revenue),
       })),
       recentTransactions: recentTxnRes.rows,
+      overdueInvoices:    overdueInvRes.rows,
+      recentExpenses:     recentExpRes.rows,
+      pendingQuotations:  pendingQuotesRes.rows,
     });
   } catch (error) {
     console.error('Dashboard API error:', error);
